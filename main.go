@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"show_commands/groups"
 	"show_commands/links"
 	"show_commands/utils"
 )
@@ -24,7 +25,7 @@ func main() {
 	}
 
 	// link service
-	linksService := links.NewLocalLinkService(rootDir + "/links_file.json")
+	linksService := groups.NewFileSystemGroupService[*links.Link](rootDir + "/group_links_file.json")
 	linkCommand := links.NewLinkCommand(linksService)
 	rootCmd.AddCommand(linkCommand.Command())
 

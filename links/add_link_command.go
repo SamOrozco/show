@@ -1,46 +1,35 @@
 package links
 
 import (
-	"bufio"
-	"fmt"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"os"
+	"show_commands/groups"
 	"show_commands/utils"
 )
 
-type AddLinkCommand struct {
-	linkService LinkService
+type AddItemCommand[T groups.IdDisplay] struct {
+	groupsService groups.GroupService[T]
+	creator       func() T
 }
 
-func NewAddLinkCommand(linkService LinkService) *AddLinkCommand {
-	return &AddLinkCommand{linkService: linkService}
+func NewAddCommand[T groups.IdDisplay](groupsService groups.GroupService[T], creator func() T) *AddItemCommand[T] {
+	return &AddItemCommand[T]{groupsService: groupsService, creator: creator}
 }
 
-func (l *AddLinkCommand) Command() *cobra.Command {
+func (l *AddItemCommand[T]) Command() *cobra.Command {
+	// this command expects a group flag
+	// if not provided, it will use the default group
 	linkCmd := &cobra.Command{
-		Use:   "add",
+		Use:   "add-item",
 		Short: "Add a link",
 		Run: func(cmd *cobra.Command, args []string) {
-			reader := bufio.NewReader(os.Stdin)
-
-			// get url
-			fmt.Print("URL: ")
-			url := utils.ReadLineFromStdIn(reader)
-
-			// get name
-			fmt.Print("Name(optional): ")
-			name := utils.ReadLineFromStdIn(reader)
-
-			link := Link{
-				Url:  url,
-				Name: name,
-			}
-			if err := l.linkService.AddLink(link); err != nil {
-				fmt.Println("Error adding link: ", err)
-			} else {
-				fmt.Println("Link added successfully")
+			groupId := utils.GetGroupIdFromCommand(cmd)
+			item := l.creator()
+			if err := l.groupsService.AddItemToGroup(groupId, item); err != nil {
+				panic(err)
 			}
 
+			color.Yellow("Item added to group [%d]", groupId)
 		},
 	}
 	return linkCmd
