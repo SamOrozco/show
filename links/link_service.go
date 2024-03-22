@@ -15,19 +15,19 @@ type Link struct {
 	Url  string
 }
 
-func (l Link) GetId() int {
+func (l *Link) GetId() int {
 	return l.Id
 }
 
-func (l Link) SetId(id int) {
+func (l *Link) SetId(id int) {
 	l.Id = id
 }
 
-func (l Link) DisplayString() string {
+func (l *Link) DisplayString() string {
 	return l.String()
 }
 
-func (l Link) String() string {
+func (l *Link) String() string {
 	if l.Name == "" {
 		l.Name = "No name"
 	}

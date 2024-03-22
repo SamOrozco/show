@@ -1,4 +1,4 @@
-package links
+package commands
 
 import (
 	"github.com/fatih/color"
@@ -12,7 +12,7 @@ type AddItemCommand[T groups.IdDisplay] struct {
 	creator       func() T
 }
 
-func NewAddCommand[T groups.IdDisplay](groupsService groups.GroupService[T], creator func() T) *AddItemCommand[T] {
+func NewAddItemCommand[T groups.IdDisplay](groupsService groups.GroupService[T], creator func() T) *AddItemCommand[T] {
 	return &AddItemCommand[T]{groupsService: groupsService, creator: creator}
 }
 

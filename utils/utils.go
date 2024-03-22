@@ -9,7 +9,14 @@ import (
 	"os/exec"
 	"runtime"
 	"strconv"
+	"strings"
 )
+
+func PromptFromStdIn(prompt string) string {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print(prompt)
+	return ReadLineFromStdIn(reader)
+}
 
 func ReadLineFromStdIn(reader *bufio.Reader) string {
 	line, _, _ := reader.ReadLine()
@@ -81,4 +88,8 @@ func GetGroupIdFromCommand(cmd *cobra.Command) int {
 		return 0
 	}
 	return id
+}
+
+func CleanString(value string) string {
+	return strings.Trim(strings.TrimSpace(value), "\n")
 }

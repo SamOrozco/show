@@ -2,6 +2,7 @@ package links
 
 import (
 	"github.com/spf13/cobra"
+	"show_commands/commands"
 	"show_commands/groups"
 )
 
@@ -26,12 +27,13 @@ func (l *LinkCommand) Command() *cobra.Command {
 			l.groupService.PrintGroups(currentGroups)
 		},
 	}
-	linkCmd.AddCommand(NewShowCommand(l.groupService).Command())
-	linkCmd.AddCommand(NewAddCommand(l.groupService, NewLinkCreator).Command())
+	linkCmd.AddCommand(commands.NewShowCommand(l.groupService).Command())
+	linkCmd.AddCommand(commands.NewAddItemCommand(l.groupService, NewLinkCreator).Command())
+	linkCmd.AddCommand(commands.NewAddGroupCommand(l.groupService).Command())
+	linkCmd.AddCommand(commands.NewAddSubGroupCommand(l.groupService).Command())
+
 	//linkCmd.AddItemCommand(NewRemoveLinkCommand(l.linkService).Command())
 	//linkCmd.AddItemCommand(NewSwapLinkCommand(l.linkService).Command())
 	//linkCmd.AddItemCommand(NewOpenLinkCommand(l.linkService).Command())
-
-	linkCmd.Flags().String("group", "", "set a group for your commands (e.g. --group=work)")
 	return linkCmd
 }

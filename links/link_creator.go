@@ -3,6 +3,7 @@ package links
 import (
 	"bufio"
 	"os"
+	"show_commands/utils"
 )
 
 func NewLinkCreator() *Link {
@@ -21,7 +22,7 @@ func NewLinkCreator() *Link {
 	}
 
 	return &Link{
-		Name: name,
-		Url:  url,
+		Name: utils.CleanString(name),
+		Url:  utils.CleanString(url),
 	}
 }

@@ -16,21 +16,21 @@ type IdDisplay interface {
 }
 
 type Group[T IdDisplay] struct {
-	Id        int        `json:"id"`
-	Name      string     `json:"name"`
-	Items     []T        `json:"items"`
-	SubGroups []Group[T] `json:"sub_groups"`
+	Id        int         `json:"id"`
+	Name      string      `json:"name"`
+	Items     []T         `json:"items"`
+	SubGroups []*Group[T] `json:"sub_groups"`
 }
 
-func (g Group[T]) GetId() int {
+func (g *Group[T]) GetId() int {
 	return g.Id
 }
 
-func (g Group[T]) SetId(id int) {
+func (g *Group[T]) SetId(id int) {
 	g.Id = id
 }
 
-func (g Group[T]) DisplayString() string {
+func (g *Group[T]) DisplayString() string {
 
 	// GROUP HEADER
 	var strBuilder strings.Builder
@@ -52,6 +52,7 @@ func (g Group[T]) DisplayString() string {
 type GroupService[T IdDisplay] interface {
 	GetGroups() ([]*Group[T], error)
 	AddGroup(group *Group[T]) error
+	AddSubGroup(groupId int, group *Group[T]) error
 	GetGroupByName(name string) (*Group[T], error)
 	GetGroupById(id int) (*Group[T], error)
 	AddItemToGroup(groupId int, item T) error
@@ -79,9 +80,9 @@ func (f *fileSystemGroupService[T]) GetGroups() ([]*Group[T], error) {
 	// if this is the first time adding a group we are going to return a list with a default group
 	if len(data) == 0 {
 		return []*Group[T]{{
-			Name:      "Default",
+			Name:      "Default Group",
 			Items:     []T{},
-			SubGroups: []Group[T]{},
+			SubGroups: []*Group[T]{},
 		}}, nil
 	}
 	var groups []*Group[T]
@@ -123,6 +124,26 @@ func (f fileSystemGroupService[T]) AddGroup(group *Group[T]) error {
 		return err
 	}
 	return os.WriteFile(f.filePath, data, 0644)
+}
+
+func (f fileSystemGroupService[T]) AddSubGroup(groupId int, group *Group[T]) error {
+	groups, err := f.GetGroups()
+	if err != nil {
+		return err
+	}
+	groups[groupId].SubGroups = append(groups[groupId].SubGroups, group)
+
+	// set ids
+	for i, g := range groups[groupId].SubGroups {
+		g.Id = i
+	}
+
+	data, err := json.Marshal(groups)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(f.filePath, data, 0644)
+
 }
 
 func (f fileSystemGroupService[T]) RemoveGroup(id int) error {
