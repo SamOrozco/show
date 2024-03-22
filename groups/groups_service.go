@@ -42,9 +42,11 @@ func (g *Group[T]) DisplayString() string {
 	}
 
 	// SUB GROUPS
-	strBuilder.WriteString(fmt.Sprintf("# %s -> SubGroups", g.Name) + "\n")
-	for _, subGroup := range g.SubGroups {
-		strBuilder.WriteString(subGroup.DisplayString() + "\n")
+	if len(g.SubGroups) > 0 {
+		strBuilder.WriteString(fmt.Sprintf("# %s -> SubGroups", g.Name) + "\n")
+		for _, subGroup := range g.SubGroups {
+			strBuilder.WriteString(subGroup.DisplayString() + "\n")
+		}
 	}
 	return strBuilder.String()
 }
