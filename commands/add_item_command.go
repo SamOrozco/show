@@ -19,8 +19,9 @@ func (l *AddItemCommand[T]) Command() *cobra.Command {
 	// this command expects a group flag
 	// if not provided, it will use the default group
 	linkCmd := &cobra.Command{
-		Use:   "add-item",
-		Short: "Add a link",
+		Use:     "add-item",
+		Aliases: []string{"ai"},
+		Short:   "Add a link",
 		Run: func(cmd *cobra.Command, args []string) {
 			// parse group id from command flag
 			groupId := groups.GroupIdFromCommandString(cmd.Flags().GetString("group-id"))

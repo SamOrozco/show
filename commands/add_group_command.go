@@ -17,8 +17,9 @@ func NewAddGroupCommand[T groups.IdDisplay](groupService groups.GroupService[T])
 
 func (l *AddGroupCommand[T]) Command() *cobra.Command {
 	linkCmd := &cobra.Command{
-		Use:   "add-group",
-		Short: "Add a group",
+		Use:     "add-group",
+		Aliases: []string{"ag"},
+		Short:   "Add a group",
 		Run: func(cmd *cobra.Command, args []string) {
 			groupName := ""
 			if len(args) < 1 {
