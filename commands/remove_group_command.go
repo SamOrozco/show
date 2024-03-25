@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"show_commands/groups"
 )
@@ -15,14 +16,16 @@ func NewRemoveGroupCommand[T groups.IdDisplay](groupService groups.GroupService[
 
 func (r *RemoveGroupCommand[T]) Command() *cobra.Command {
 	removeGroupCmd := &cobra.Command{
-		Use:     "remove",
+		Use:     "remove-group",
 		Aliases: []string{"r"},
 		Short:   "Remove a group",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := r.groupService.RemoveGroup(groups.GroupIdFromCommandString(cmd.Flags().GetString("group-id")))
+			groupId := groups.GroupIdFromCommandString(cmd.Flags().GetString("group-id"))
+			err := r.groupService.RemoveGroup(groupId)
 			if err != nil {
 				panic(err)
 			}
+			fmt.Printf("Group %d removed", groupId)
 		},
 	}
 	return removeGroupCmd

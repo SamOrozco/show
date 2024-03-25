@@ -26,7 +26,7 @@ func main() {
 
 	// link service
 	linksService := groups.NewFileSystemGroupService[*links.Link](rootDir + "/group_links_file.json")
-	linkCommand := links.NewLinkCommand(linksService)
+	linkCommand := links.NewLinkCommand(linksService, links.NewLocalLinkService())
 	rootCmd.AddCommand(linkCommand.Command())
 
 	// shared flags

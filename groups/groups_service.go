@@ -20,7 +20,10 @@ func GroupIdFromCommandString(flagValue string, err error) *GroupId {
 	if err != nil {
 		return &GroupId{Data: []int{0}}
 	}
+	return GroupIdFromString(flagValue)
+}
 
+func GroupIdFromString(flagValue string) *GroupId {
 	// if no value provided we are going to default to the default group
 	if flagValue == "" {
 		return &GroupId{Data: []int{0}}
@@ -57,6 +60,14 @@ func (g *GroupId) GetRootId() int {
 
 func (g *GroupId) GetSubGroup(idx int) int {
 	return g.Data[idx]
+}
+
+// PopLast will remove the last element from the group id
+// and return the last value that was popped
+func (g *GroupId) PopLast() int {
+	last := g.Data[len(g.Data)-1]
+	g.Data = g.Data[:len(g.Data)-1]
+	return last
 }
 
 type IdDisplay interface {
@@ -127,7 +138,7 @@ type GroupService[T IdDisplay] interface {
 	AddGroup(group *Group[T]) error
 	AddSubGroup(groupId *GroupId, group *Group[T]) error
 	GetGroupByName(name string) (*Group[T], error)
-	GetGroupById(id int) (*Group[T], error)
+	GetGroupById(id *GroupId) (*Group[T], error)
 	AddItemToGroup(groupId *GroupId, item T) error
 	RemoveItemFromGroup(groupId int, itemId int) error
 	RemoveGroup(id *GroupId) error
@@ -232,26 +243,23 @@ func (f fileSystemGroupService[T]) RemoveGroup(id *GroupId) error {
 	// get root group
 	hasSubGroups := id.HasSubGroups()
 	if !hasSubGroups {
-		groups = append(groups[:id.GetRootId()], groups[id.GetRootId()+1:]...)
-		for i, g := range groups {
-			g.Id = i
+		newGroups := []*Group[T]{}
+		for i, group := range groups {
+			if i != id.GetRootId() {
+				newGroups = append(newGroups, group)
+			}
 		}
-		data, err := json.Marshal(groups)
+		for i, group := range newGroups {
+			group.Id = i
+		}
+		data, err := json.Marshal(newGroups)
 		if err != nil {
 			return err
 		}
 		return os.WriteFile(f.filePath, data, 0644)
 	} else {
-		group := groups[id.GetRootId()]
-		for i := 1; i < len(id.Data); i++ {
-			group = group.SubGroups[id.GetSubGroup(i)]
-		}
-		groups[id.GetRootId()].SubGroups = append(group.SubGroups[:id.GetSubGroup(len(id.Data)-1)], group.SubGroups[id.GetSubGroup(len(id.Data)-1)+1:]...)
-		data, err := json.Marshal(groups)
-		if err != nil {
-			return err
-		}
-		return os.WriteFile(f.filePath, data, 0644)
+		println("Removing sub groups is not supported yet")
+		return nil
 	}
 }
 
@@ -320,13 +328,17 @@ func (f *fileSystemGroupService[T]) GetGroupByName(name string) (*Group[T], erro
 	return nil, nil
 }
 
-func (f *fileSystemGroupService[T]) GetGroupById(id int) (*Group[T], error) {
+func (f *fileSystemGroupService[T]) GetGroupById(id *GroupId) (*Group[T], error) {
 	groups, err := f.GetGroups()
 	if err != nil {
 		return nil, err
 	}
-	if id < 0 || id >= len(groups) {
-		return nil, nil
+	// get root group
+	group := groups[id.GetRootId()]
+	if id.HasSubGroups() {
+		for i := 1; i < len(id.Data); i++ {
+			group = group.SubGroups[id.GetSubGroup(i)]
+		}
 	}
-	return groups[id], nil
+	return group, nil
 }
