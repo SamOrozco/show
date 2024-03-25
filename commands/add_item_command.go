@@ -33,7 +33,7 @@ func (l *AddItemCommand[T]) Command() *cobra.Command {
 				panic(err)
 			}
 
-			color.Yellow("Item added to group [%d]", groupId)
+			color.Yellow("Item added to group [%s]", groupId)
 		},
 	}
 	return linkCmd
