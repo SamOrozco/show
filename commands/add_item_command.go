@@ -4,7 +4,6 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"show_commands/groups"
-	"show_commands/utils"
 )
 
 type AddItemCommand[T groups.IdDisplay] struct {
@@ -23,8 +22,13 @@ func (l *AddItemCommand[T]) Command() *cobra.Command {
 		Use:   "add-item",
 		Short: "Add a link",
 		Run: func(cmd *cobra.Command, args []string) {
-			groupId := utils.GetGroupIdFromCommand(cmd)
+			// parse group id from command flag
+			groupId := groups.GroupIdFromCommandString(cmd.Flags().GetString("group-id"))
+
+			// use creator to create a new item
 			item := l.creator()
+
+			// add item to groups
 			if err := l.groupsService.AddItemToGroup(groupId, item); err != nil {
 				panic(err)
 			}

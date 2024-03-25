@@ -3,7 +3,6 @@ package utils
 import (
 	"bufio"
 	"fmt"
-	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"os/exec"
@@ -78,16 +77,6 @@ func openLink(url string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func GetGroupIdFromCommand(cmd *cobra.Command) int {
-	groupName, _ := cmd.Flags().GetString("group-id")
-	// check if group name is a number
-	id, err := strconv.Atoi(groupName)
-	if err != nil {
-		return 0
-	}
-	return id
 }
 
 func CleanString(value string) string {

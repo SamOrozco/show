@@ -29,8 +29,8 @@ func main() {
 	linkCommand := links.NewLinkCommand(linksService)
 	rootCmd.AddCommand(linkCommand.Command())
 
-	// add shared flags
-	rootCmd.Flags().Int("group-id", 0, "set a group for your commands (e.g. --group-id=1)")
+	// shared flags
+	rootCmd.PersistentFlags().String("group-id", "0", "This defines the group you are wanting to do your operation on. (e.g. --group-id=1 will target root group 1 --group-id=1.2 will target rootgroup 1 subgroup 2)")
 
 	// start command
 	if err := rootCmd.Execute(); err != nil {

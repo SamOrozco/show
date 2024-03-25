@@ -6,8 +6,58 @@ import (
 	"github.com/charmbracelet/glamour"
 	"os"
 	"show_commands/utils"
+	"strconv"
 	"strings"
 )
+
+type GroupId struct {
+	Data []int
+}
+
+// GroupIdFromCommandString will parse the flag value and return a GroupId struct
+func GroupIdFromCommandString(flagValue string, err error) *GroupId {
+	// if there an error getting the flag value return default group
+	if err != nil {
+		return &GroupId{Data: []int{0}}
+	}
+
+	// if no value provided we are going to default to the default group
+	if flagValue == "" {
+		return &GroupId{Data: []int{0}}
+	}
+
+	// we know there are child groups to parse out
+	if strings.Contains(flagValue, ".") {
+		var data []int
+		for _, s := range strings.Split(flagValue, ".") {
+			i, err := strconv.Atoi(s)
+			if err != nil {
+				panic(err)
+			}
+			data = append(data, i)
+		}
+		return &GroupId{Data: data}
+	}
+
+	// else single root group
+	i, err := strconv.Atoi(flagValue)
+	if err != nil {
+		panic(err)
+	}
+	return &GroupId{Data: []int{i}}
+}
+
+func (g *GroupId) HasSubGroups() bool {
+	return len(g.Data) > 1
+}
+
+func (g *GroupId) GetRootId() int {
+	return g.Data[0]
+}
+
+func (g *GroupId) GetSubGroup(idx int) int {
+	return g.Data[idx]
+}
 
 type IdDisplay interface {
 	GetId() int
@@ -54,10 +104,10 @@ func (g *Group[T]) DisplayString() string {
 type GroupService[T IdDisplay] interface {
 	GetGroups() ([]*Group[T], error)
 	AddGroup(group *Group[T]) error
-	AddSubGroup(groupId int, group *Group[T]) error
+	AddSubGroup(groupId *GroupId, group *Group[T]) error
 	GetGroupByName(name string) (*Group[T], error)
 	GetGroupById(id int) (*Group[T], error)
-	AddItemToGroup(groupId int, item T) error
+	AddItemToGroup(groupId *GroupId, item T) error
 	RemoveItemFromGroup(groupId int, itemId int) error
 	RemoveGroup(id int) error
 	PrintGroups(groups []*Group[T])
@@ -128,15 +178,23 @@ func (f fileSystemGroupService[T]) AddGroup(group *Group[T]) error {
 	return os.WriteFile(f.filePath, data, 0644)
 }
 
-func (f fileSystemGroupService[T]) AddSubGroup(groupId int, group *Group[T]) error {
+func (f fileSystemGroupService[T]) AddSubGroup(groupId *GroupId, subGroup *Group[T]) error {
 	groups, err := f.GetGroups()
 	if err != nil {
 		return err
 	}
-	groups[groupId].SubGroups = append(groups[groupId].SubGroups, group)
+	// get root subGroup
+	group := groups[groupId.GetRootId()]
+	if groupId.HasSubGroups() {
+		for i := 1; i < len(groupId.Data); i++ {
+			group = group.SubGroups[groupId.GetSubGroup(i)]
+		}
+	}
+	// add subGroup to group
+	group.SubGroups = append(group.SubGroups, subGroup)
 
 	// set ids
-	for i, g := range groups[groupId].SubGroups {
+	for i, g := range group.SubGroups {
 		g.Id = i
 	}
 
@@ -170,16 +228,25 @@ func (f fileSystemGroupService[T]) RemoveGroup(id int) error {
 	return os.WriteFile(f.filePath, data, 0644)
 }
 
-func (f *fileSystemGroupService[T]) AddItemToGroup(groupId int, item T) error {
+func (f *fileSystemGroupService[T]) AddItemToGroup(groupId *GroupId, item T) error {
 	groups, err := f.GetGroups()
 	if err != nil {
 		return err
 	}
-	newItems := append(groups[groupId].Items, item)
+
+	// get root group
+	group := groups[groupId.GetRootId()]
+	if groupId.HasSubGroups() {
+		for i := 1; i < len(groupId.Data); i++ {
+			group = group.SubGroups[groupId.GetSubGroup(i)]
+		}
+	}
+
+	newItems := append(group.Items, item)
 	for i, newItem := range newItems {
 		newItem.SetId(i)
 	}
-	groups[groupId].Items = newItems
+	group.Items = newItems
 	data, err := json.Marshal(groups)
 	if err != nil {
 		return err

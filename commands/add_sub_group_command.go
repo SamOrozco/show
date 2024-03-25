@@ -33,7 +33,7 @@ func (l *AddSubGroupCommand[T]) Command() *cobra.Command {
 
 			// get group from command
 			// if no group provided will be added to default group
-			groupId := utils.GetGroupIdFromCommand(cmd)
+			groupId := groups.GroupIdFromCommandString(cmd.Flags().GetString("group-id"))
 
 			// add sub command
 			if err := l.groupService.AddSubGroup(groupId, &groups.Group[T]{
