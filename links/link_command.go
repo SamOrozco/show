@@ -8,11 +8,10 @@ import (
 
 type LinkCommand struct {
 	groupService groups.GroupService[*Link]
-	linkService  LinkService
 }
 
-func NewLinkCommand(groupService groups.GroupService[*Link], linkService LinkService) *LinkCommand {
-	return &LinkCommand{groupService: groupService, linkService: linkService}
+func NewLinkCommand(groupService groups.GroupService[*Link]) *LinkCommand {
+	return &LinkCommand{groupService: groupService}
 }
 
 func (l *LinkCommand) Command() *cobra.Command {
@@ -34,6 +33,5 @@ func (l *LinkCommand) Command() *cobra.Command {
 	linkCmd.AddCommand(commands.NewAddSubGroupCommand(l.groupService).Command())
 	linkCmd.AddCommand(commands.NewRemoveGroupCommand(l.groupService).Command())
 	linkCmd.AddCommand(commands.NewRemoveItemCommand(l.groupService).Command())
-	linkCmd.AddCommand(NewOpenLinkCommand(l.groupService, l.linkService).Command())
 	return linkCmd
 }

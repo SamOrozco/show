@@ -3,6 +3,8 @@ package utils
 import (
 	"bufio"
 	"fmt"
+	"github.com/atotto/clipboard"
+	"github.com/fatih/color"
 	"log"
 	"os"
 	"os/exec"
@@ -90,4 +92,9 @@ func PromptForConfirmation(prompt string) bool {
 	fmt.Print(">")
 	line, _, _ := reader.ReadLine()
 	return strings.ToLower(string(line)) == "y"
+}
+
+func CopyToClipboard(value string) error {
+	color.Yellow("Copying to clipboard")
+	return clipboard.WriteAll(value)
 }

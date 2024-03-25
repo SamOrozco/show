@@ -111,14 +111,14 @@ func (g *Group[T]) SetId(id int) {
 type FormatFunc func(format string, a ...interface{}) string
 
 var headerDepthFunc = []FormatFunc{
-	color.New(color.FgHiBlue).SprintfFunc(),
-	color.New(color.FgHiYellow).SprintfFunc(),
-	color.New(color.FgHiGreen).SprintfFunc(),
-	color.New(color.FgHiMagenta).SprintfFunc(),
-	color.New(color.FgHiCyan).SprintfFunc(),
-	color.New(color.FgHiRed).SprintfFunc(),
-	color.New(color.FgHiWhite).SprintfFunc(),
-	color.New(color.FgHiBlue).SprintfFunc(),
+	color.New(color.FgHiBlue).Add(color.Bold).Add(color.Underline).SprintfFunc(),
+	color.New(color.FgHiYellow).Add(color.Bold).SprintfFunc(),
+	color.New(color.FgHiGreen).Add(color.Bold).SprintfFunc(),
+	color.New(color.FgHiMagenta).Add(color.Bold).SprintfFunc(),
+	color.New(color.FgHiCyan).Add(color.Bold).SprintfFunc(),
+	color.New(color.FgHiRed).Add(color.Bold).SprintfFunc(),
+	color.New(color.FgHiWhite).Add(color.Bold).SprintfFunc(),
+	color.New(color.FgHiBlue).Add(color.Bold).SprintfFunc(),
 }
 
 var indexString = " "
