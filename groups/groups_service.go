@@ -3,7 +3,7 @@ package groups
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/charmbracelet/glamour"
+	"github.com/fatih/color"
 	"os"
 	"show_commands/utils"
 	"strconv"
@@ -80,22 +80,43 @@ func (g *Group[T]) SetId(id int) {
 	g.Id = id
 }
 
-func (g *Group[T]) DisplayString() string {
+// output func
+type FormatFunc func(format string, a ...interface{}) string
+
+var headerDepthFunc = []FormatFunc{
+	color.New(color.FgHiBlue).SprintfFunc(),
+	color.New(color.FgHiYellow).SprintfFunc(),
+	color.New(color.FgHiGreen).SprintfFunc(),
+	color.New(color.FgHiMagenta).SprintfFunc(),
+	color.New(color.FgHiCyan).SprintfFunc(),
+	color.New(color.FgHiRed).SprintfFunc(),
+	color.New(color.FgHiWhite).SprintfFunc(),
+	color.New(color.FgHiBlue).SprintfFunc(),
+}
+
+var indexString = " "
+
+func (g *Group[T]) DisplayString(depth int) string {
+	var headerFormatFunc FormatFunc
+	if depth > len(headerDepthFunc)-1 {
+		headerFormatFunc = headerDepthFunc[0]
+	} else {
+		headerFormatFunc = headerDepthFunc[depth]
+	}
 
 	// GROUP HEADER
 	var strBuilder strings.Builder
-	strBuilder.WriteString("# " + fmt.Sprintf("[%d]%s", g.Id, g.Name) + "\n")
+	strBuilder.WriteString(strings.Repeat(indexString, depth) + headerFormatFunc("[%d]%s", g.Id, g.Name) + "\n")
 
 	// WRITE ITEMS
 	for _, item := range g.Items {
-		strBuilder.WriteString(item.DisplayString() + "\n")
+		strBuilder.WriteString(strings.Repeat(indexString, depth+2) + item.DisplayString() + "\n")
 	}
 
 	// SUB GROUPS
 	if len(g.SubGroups) > 0 {
-		strBuilder.WriteString(fmt.Sprintf("# %s -> SubGroups", g.Name) + "\n")
 		for _, subGroup := range g.SubGroups {
-			strBuilder.WriteString(subGroup.DisplayString() + "\n")
+			strBuilder.WriteString(strings.Repeat(indexString, depth+1) + subGroup.DisplayString(depth+1) + "\n")
 		}
 	}
 	return strBuilder.String()
@@ -109,7 +130,7 @@ type GroupService[T IdDisplay] interface {
 	GetGroupById(id int) (*Group[T], error)
 	AddItemToGroup(groupId *GroupId, item T) error
 	RemoveItemFromGroup(groupId int, itemId int) error
-	RemoveGroup(id int) error
+	RemoveGroup(id *GroupId) error
 	PrintGroups(groups []*Group[T])
 }
 
@@ -152,13 +173,9 @@ func (f *fileSystemGroupService[T]) PrintGroups(groups []*Group[T]) {
 
 	var bldr strings.Builder
 	for _, group := range groups {
-		bldr.WriteString(group.DisplayString() + "\n")
+		bldr.WriteString(group.DisplayString(0) + "\n")
 	}
-	out, err := glamour.Render(bldr.String(), "dark")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Print(out)
+	fmt.Print(bldr.String())
 }
 
 func (f fileSystemGroupService[T]) AddGroup(group *Group[T]) error {
@@ -206,26 +223,36 @@ func (f fileSystemGroupService[T]) AddSubGroup(groupId *GroupId, subGroup *Group
 
 }
 
-func (f fileSystemGroupService[T]) RemoveGroup(id int) error {
+func (f fileSystemGroupService[T]) RemoveGroup(id *GroupId) error {
 	groups, err := f.GetGroups()
 	if err != nil {
 		return err
 	}
-	// remove group and reset ids
-	var newGroups []*Group[T]
-	for i, g := range groups {
-		if i != id {
-			newGroups = append(newGroups, g)
+
+	// get root group
+	hasSubGroups := id.HasSubGroups()
+	if !hasSubGroups {
+		groups = append(groups[:id.GetRootId()], groups[id.GetRootId()+1:]...)
+		for i, g := range groups {
+			g.Id = i
 		}
+		data, err := json.Marshal(groups)
+		if err != nil {
+			return err
+		}
+		return os.WriteFile(f.filePath, data, 0644)
+	} else {
+		group := groups[id.GetRootId()]
+		for i := 1; i < len(id.Data); i++ {
+			group = group.SubGroups[id.GetSubGroup(i)]
+		}
+		groups[id.GetRootId()].SubGroups = append(group.SubGroups[:id.GetSubGroup(len(id.Data)-1)], group.SubGroups[id.GetSubGroup(len(id.Data)-1)+1:]...)
+		data, err := json.Marshal(groups)
+		if err != nil {
+			return err
+		}
+		return os.WriteFile(f.filePath, data, 0644)
 	}
-	for i, g := range newGroups {
-		g.Id = i
-	}
-	data, err := json.Marshal(newGroups)
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(f.filePath, data, 0644)
 }
 
 func (f *fileSystemGroupService[T]) AddItemToGroup(groupId *GroupId, item T) error {

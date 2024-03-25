@@ -31,8 +31,8 @@ func (l *LinkCommand) Command() *cobra.Command {
 	linkCmd.AddCommand(commands.NewAddItemCommand(l.groupService, NewLinkCreator).Command())
 	linkCmd.AddCommand(commands.NewAddGroupCommand(l.groupService).Command())
 	linkCmd.AddCommand(commands.NewAddSubGroupCommand(l.groupService).Command())
-
-	//linkCmd.AddItemCommand(NewRemoveLinkCommand(l.linkService).Command())
+	linkCmd.AddCommand(commands.NewRemoveGroupCommand(l.groupService).Command())
+	
 	//linkCmd.AddItemCommand(NewSwapLinkCommand(l.linkService).Command())
 	//linkCmd.AddItemCommand(NewOpenLinkCommand(l.linkService).Command())
 	return linkCmd
