@@ -50,6 +50,11 @@ func GroupIdFromString(flagValue string) *GroupId {
 	return &GroupId{Data: []int{i}}
 }
 
+func GroupIdAndItemIdFromString(value string) (*GroupId, int) {
+	groupId := GroupIdFromString(value)
+	return groupId, groupId.PopLast()
+}
+
 func (g *GroupId) HasSubGroups() bool {
 	return len(g.Data) > 1
 }
@@ -140,7 +145,7 @@ type GroupService[T IdDisplay] interface {
 	GetGroupByName(name string) (*Group[T], error)
 	GetGroupById(id *GroupId) (*Group[T], error)
 	AddItemToGroup(groupId *GroupId, item T) error
-	RemoveItemFromGroup(groupId int, itemId int) error
+	RemoveItemFromGroup(groupId *GroupId, itemId int) error
 	RemoveGroup(id *GroupId) error
 	PrintGroups(groups []*Group[T])
 }
@@ -289,25 +294,29 @@ func (f *fileSystemGroupService[T]) AddItemToGroup(groupId *GroupId, item T) err
 	return os.WriteFile(f.filePath, data, 0644)
 }
 
-func (f *fileSystemGroupService[T]) RemoveItemFromGroup(groupId int, itemId int) error {
+func (f *fileSystemGroupService[T]) RemoveItemFromGroup(groupId *GroupId, itemId int) error {
 	groups, err := f.GetGroups()
 	if err != nil {
 		return err
 	}
-	// remove item from group
+	group := groups[groupId.GetRootId()]
+	if groupId.HasSubGroups() {
+		for i := 1; i < len(groupId.Data); i++ {
+			group = group.SubGroups[groupId.GetSubGroup(i)]
+		}
+	}
+
 	var newItems []T
-	for i, item := range groups[groupId].Items {
+	for i, item := range group.Items {
 		if i != itemId {
 			newItems = append(newItems, item)
 		}
 	}
 
-	// set id on new items
-	for i, item := range newItems {
-		item.SetId(i)
+	for i, newItem := range newItems {
+		newItem.SetId(i)
 	}
-
-	groups[groupId].Items = newItems
+	group.Items = newItems
 	data, err := json.Marshal(groups)
 	if err != nil {
 		return err

@@ -28,8 +28,7 @@ func (l *OpenLinkCommand) Command() *cobra.Command {
 			}
 
 			// get the group id
-			groupId := groups.GroupIdFromString(args[0])
-			linkId := groupId.PopLast()
+			groupId, linkId := groups.GroupIdAndItemIdFromString(args[0])
 			group, err := l.groupService.GetGroupById(groupId)
 			if err != nil {
 				panic(err)

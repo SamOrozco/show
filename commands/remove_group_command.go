@@ -17,10 +17,14 @@ func NewRemoveGroupCommand[T groups.IdDisplay](groupService groups.GroupService[
 func (r *RemoveGroupCommand[T]) Command() *cobra.Command {
 	removeGroupCmd := &cobra.Command{
 		Use:     "remove-group",
-		Aliases: []string{"r"},
+		Aliases: []string{"rg"},
 		Short:   "Remove a group",
 		Run: func(cmd *cobra.Command, args []string) {
-			groupId := groups.GroupIdFromCommandString(cmd.Flags().GetString("group-id"))
+			if len(args) == 0 {
+				panic("No group provided")
+				return
+			}
+			groupId := groups.GroupIdFromString(args[0])
 			err := r.groupService.RemoveGroup(groupId)
 			if err != nil {
 				panic(err)
