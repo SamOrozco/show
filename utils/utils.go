@@ -82,3 +82,12 @@ func openLink(url string) {
 func CleanString(value string) string {
 	return strings.Trim(strings.TrimSpace(value), "\n")
 }
+
+func PromptForConfirmation(prompt string) bool {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println(prompt)
+	fmt.Println("Enter 'y' to confirm or any other key to cancel")
+	fmt.Print(">")
+	line, _, _ := reader.ReadLine()
+	return strings.ToLower(string(line)) == "y"
+}

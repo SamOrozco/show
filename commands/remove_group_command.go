@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"show_commands/groups"
+	"show_commands/utils"
 )
 
 type RemoveGroupCommand[T groups.IdDisplay] struct {
@@ -25,6 +26,9 @@ func (r *RemoveGroupCommand[T]) Command() *cobra.Command {
 				return
 			}
 			groupId := groups.GroupIdFromString(args[0])
+			if !utils.PromptForConfirmation(fmt.Sprintf("Are you sure you want to remove group [%s]?", groupId)) {
+				return
+			}
 			err := r.groupService.RemoveGroup(groupId)
 			if err != nil {
 				panic(err)

@@ -67,6 +67,17 @@ func (g *GroupId) GetSubGroup(idx int) int {
 	return g.Data[idx]
 }
 
+func (g *GroupId) String() string {
+	var strBuilder strings.Builder
+	for i, d := range g.Data {
+		strBuilder.WriteString(strconv.Itoa(d))
+		if i != len(g.Data)-1 {
+			strBuilder.WriteString(".")
+		}
+	}
+	return strBuilder.String()
+}
+
 // PopLast will remove the last element from the group id
 // and return the last value that was popped
 func (g *GroupId) PopLast() int {
