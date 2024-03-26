@@ -31,7 +31,7 @@ func main() {
 	rootCmd.AddCommand(buildCommandLineCommand())
 
 	// shared flags
-	rootCmd.PersistentFlags().String("group-id", "0", "This defines the group you are wanting to do your operation on. (e.g. --group-id=1 will target root group 1 --group-id=1.2 will target rootgroup 1 subgroup 2)")
+	rootCmd.PersistentFlags().StringP("group-id", "g", "0", "This defines the group you are wanting to do your operation on. (e.g. --group-id=1 will target root group 1 --group-id=1.2 will target rootgroup 1 subgroup 2)")
 
 	// start command
 	if err := rootCmd.Execute(); err != nil {
