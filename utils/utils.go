@@ -102,3 +102,10 @@ func CopyToClipboard(value string) error {
 func ReadFromClipboard() (string, error) {
 	return clipboard.ReadAll()
 }
+
+func TruncateString(value string, length int) string {
+	if len(value) > length {
+		return value[:length]
+	}
+	return value
+}

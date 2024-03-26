@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"show_commands/commands"
 	"show_commands/groups"
+	"show_commands/utils"
 	"strings"
 )
 
@@ -30,7 +31,7 @@ func (c *CommandLine) DisplayString() string {
 	var strBldr strings.Builder
 	strBldr.WriteString(titleFormatter(fmt.Sprintf("[%d][%s]", c.Id, c.Name)))
 	strBldr.WriteString(titleFormatter(fmt.Sprintf(" -> ")))
-	strBldr.WriteString(codeFormatter(fmt.Sprintf(" %s ", c.Code)))
+	strBldr.WriteString(utils.TruncateString(codeFormatter(fmt.Sprintf(" %s ", c.Code)), 100))
 	return strBldr.String()
 }
 
