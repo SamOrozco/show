@@ -31,7 +31,7 @@ func (c *CommandLine) DisplayString() string {
 	var strBldr strings.Builder
 	strBldr.WriteString(titleFormatter(fmt.Sprintf("[%d][%s]", c.Id, c.Name)))
 	strBldr.WriteString(titleFormatter(fmt.Sprintf(" -> ")))
-	strBldr.WriteString(utils.TruncateString(codeFormatter(fmt.Sprintf(" %s ", c.Code)), 100))
+	strBldr.WriteString(utils.TruncateString(codeFormatter(fmt.Sprintf(" %s ", c.Code)), 50, 200))
 	return strBldr.String()
 }
 

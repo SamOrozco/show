@@ -103,9 +103,9 @@ func ReadFromClipboard() (string, error) {
 	return clipboard.ReadAll()
 }
 
-func TruncateString(value string, length int) string {
-	if len(value) > length {
-		return value[:length]
+func TruncateString(value string, length int, maxLength int) string {
+	if len(value) > maxLength {
+		return value[:length] + color.RedString("...truncated")
 	}
 	return value
 }
