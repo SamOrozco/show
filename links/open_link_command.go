@@ -1,70 +1,47 @@
 package links
 
 import (
-	"bufio"
-	"fmt"
 	"github.com/spf13/cobra"
-	"os"
-	"show_commands/utils"
-	"strconv"
-	"strings"
+	"show_commands/groups"
 )
 
 type OpenLinkCommand struct {
-	linkService LinkService
+	groupService groups.GroupService[*Link]
+	linkService  LinkService
 }
 
-func NewOpenLinkCommand(linkService LinkService) *OpenLinkCommand {
-	return &OpenLinkCommand{linkService: linkService}
+func NewOpenLinkCommand(groupService groups.GroupService[*Link], linkService LinkService) *OpenLinkCommand {
+	return &OpenLinkCommand{groupService: groupService, linkService: linkService}
 }
 
 func (l *OpenLinkCommand) Command() *cobra.Command {
 	linkCmd := &cobra.Command{
-		Use:   "open",
-		Short: "Open a link",
+		Use:     "open",
+		Aliases: []string{"o"},
+		Short:   "Open a link",
 		Run: func(cmd *cobra.Command, args []string) {
-			intArgs, size := utils.GetIntArgs(args)
-			// if an arg is passed we are going to automatically open the link with that Id
-			// if no arg is passed we are going to prompt the user to open a link
-
-			linkId := 0
-			showDialog := false
-			if size < 1 {
-				showDialog = true
-			} else {
-				linkId = intArgs[0]
+			// the arg passed to this command is going to the be the path to the link
+			// e.g. 0.0.1 -> groupId 0, subgroup 0, link 1
+			if len(args) == 0 {
+				panic("No link provided")
+				return
 			}
-			if err := l.OpenLink(linkId, showDialog); err != nil {
+
+			// get the group id
+			groupId, linkId := groups.GroupIdAndItemIdFromString(args[0])
+			group, err := l.groupService.GetGroupById(groupId)
+			if err != nil {
 				panic(err)
 			}
-
+			if linkId >= len(group.Items) {
+				panic("Invalid link id")
+				return
+			}
+			link := group.Items[linkId]
+			if err := l.linkService.OpenLink(link); err != nil {
+				panic(err)
+			}
 		},
 	}
 	return linkCmd
-}
-
-func (l *OpenLinkCommand) OpenLink(openId int, showDialog bool) error {
-	if !showDialog {
-		link, err := l.linkService.GetLink(openId)
-		if err != nil {
-			return err
-		}
-		if err := l.linkService.OpenLink(link); err != nil {
-			return err
-		}
-		return nil
-	}
-
-	links, err := l.linkService.GetLinks()
-	if err != nil {
-		return err
-	}
-	l.linkService.PrintLinks(links)
-	fmt.Print("Open a link: ")
-	line := utils.ReadLineFromStdIn(bufio.NewReader(os.Stdin))
-	linkId, err := strconv.Atoi(strings.TrimSpace(line))
-	if err := l.linkService.OpenLink(links[linkId]); err != nil {
-		return err
-	}
-	return nil
 }

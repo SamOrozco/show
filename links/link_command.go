@@ -1,13 +1,17 @@
 package links
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+	"show_commands/commands"
+	"show_commands/groups"
+)
 
 type LinkCommand struct {
-	linkService LinkService
+	groupService groups.GroupService[*Link]
 }
 
-func NewLinkCommand(linkService LinkService) *LinkCommand {
-	return &LinkCommand{linkService: linkService}
+func NewLinkCommand(groupService groups.GroupService[*Link]) *LinkCommand {
+	return &LinkCommand{groupService: groupService}
 }
 
 func (l *LinkCommand) Command() *cobra.Command {
@@ -16,17 +20,18 @@ func (l *LinkCommand) Command() *cobra.Command {
 		Aliases: []string{"l"},
 		Short:   "Manage links, show and add links to manage",
 		Run: func(cmd *cobra.Command, args []string) {
-			links, err := l.linkService.GetLinks()
+			currentGroups, err := l.groupService.GetGroups()
 			if err != nil {
 				panic(err)
 			}
-			l.linkService.PrintLinks(links)
+			l.groupService.PrintGroups(currentGroups)
 		},
 	}
-	linkCmd.AddCommand(NewAddLinkCommand(l.linkService).Command())
-	linkCmd.AddCommand(NewShowLinkCommand(l.linkService).Command())
-	linkCmd.AddCommand(NewRemoveLinkCommand(l.linkService).Command())
-	linkCmd.AddCommand(NewSwapLinkCommand(l.linkService).Command())
-	linkCmd.AddCommand(NewOpenLinkCommand(l.linkService).Command())
+	linkCmd.AddCommand(commands.NewShowCommand(l.groupService).Command())
+	linkCmd.AddCommand(commands.NewAddItemCommand(l.groupService, NewLinkCreator).Command())
+	linkCmd.AddCommand(commands.NewAddGroupCommand(l.groupService).Command())
+	linkCmd.AddCommand(commands.NewAddSubGroupCommand(l.groupService).Command())
+	linkCmd.AddCommand(commands.NewRemoveGroupCommand(l.groupService).Command())
+	linkCmd.AddCommand(commands.NewRemoveItemCommand(l.groupService).Command())
 	return linkCmd
 }

@@ -3,12 +3,21 @@ package utils
 import (
 	"bufio"
 	"fmt"
+	"github.com/atotto/clipboard"
+	"github.com/fatih/color"
 	"log"
 	"os"
 	"os/exec"
 	"runtime"
 	"strconv"
+	"strings"
 )
+
+func PromptFromStdIn(prompt string) string {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print(prompt)
+	return ReadLineFromStdIn(reader)
+}
 
 func ReadLineFromStdIn(reader *bufio.Reader) string {
 	line, _, _ := reader.ReadLine()
@@ -70,4 +79,22 @@ func openLink(url string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func CleanString(value string) string {
+	return strings.Trim(strings.TrimSpace(value), "\n")
+}
+
+func PromptForConfirmation(prompt string) bool {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println(prompt)
+	fmt.Println("Enter 'y' to confirm or any other key to cancel")
+	fmt.Print(">")
+	line, _, _ := reader.ReadLine()
+	return strings.ToLower(string(line)) == "y"
+}
+
+func CopyToClipboard(value string) error {
+	color.Yellow("Copying to clipboard")
+	return clipboard.WriteAll(value)
 }
