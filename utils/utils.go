@@ -98,3 +98,7 @@ func CopyToClipboard(value string) error {
 	color.Yellow("Copying to clipboard")
 	return clipboard.WriteAll(value)
 }
+
+func ReadFromClipboard() (string, error) {
+	return clipboard.ReadAll()
+}
