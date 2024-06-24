@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"os"
 	command_line "show_commands/command-line"
 	"show_commands/commands"
 	"show_commands/groups"
@@ -19,7 +20,7 @@ var (
 	}
 )
 
-const rootDir = "/tmp/show/links"
+var rootDir = getRootDir()
 
 func main() {
 	if err := utils.CreateDirectoryIfNotExists(rootDir); err != nil {
@@ -63,4 +64,12 @@ func buildLinksCommand() *cobra.Command {
 			return linkService.OpenLink(link)
 		}).Command())
 	return linkCmd
+}
+
+func getRootDir() string {
+	userHomeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+	return userHomeDir + "/.show"
 }
