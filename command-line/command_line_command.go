@@ -25,7 +25,7 @@ func (c *CommandLine) SetId(id int) {
 }
 
 var titleFormatter = color.New(color.FgHiGreen).SprintfFunc()
-var codeFormatter = color.New(color.BgWhite).SprintfFunc()
+var codeFormatter = color.New().SprintfFunc()
 
 func (c *CommandLine) DisplayString() string {
 	var strBldr strings.Builder
