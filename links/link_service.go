@@ -11,6 +11,10 @@ type Link struct {
 	Url  string
 }
 
+func (l *Link) GetName() string {
+	return l.Name
+}
+
 func (l *Link) GetId() int {
 	return l.Id
 }
@@ -19,15 +23,15 @@ func (l *Link) SetId(id int) {
 	l.Id = id
 }
 
-func (l *Link) DisplayString() string {
-	return l.String()
+func (l *Link) DisplayString(parentID string) string {
+	return l.String(parentID)
 }
 
-func (l *Link) String() string {
+func (l *Link) String(parentId string) string {
 	if l.Name == "" {
 		l.Name = "No name"
 	}
-	return fmt.Sprintf(`- [%d]%s %s`, l.Id, l.Name, l.Url)
+	return fmt.Sprintf(`- [%s.%d]%s %s`, parentId, l.Id, l.Name, l.Url)
 }
 
 type LinkService interface {

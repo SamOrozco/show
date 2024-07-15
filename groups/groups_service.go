@@ -89,7 +89,8 @@ func (g *GroupId) PopLast() int {
 type IdDisplay interface {
 	GetId() int
 	SetId(id int)
-	DisplayString() string
+	DisplayString(parentId string) string
+	GetName() string
 }
 
 type Group[T IdDisplay] struct {
@@ -123,7 +124,7 @@ var headerDepthFunc = []FormatFunc{
 
 var indexString = " "
 
-func (g *Group[T]) DisplayString(depth int) string {
+func (g *Group[T]) DisplayString(depth int, parentId string) string {
 	var headerFormatFunc FormatFunc
 	if depth > len(headerDepthFunc)-1 {
 		headerFormatFunc = headerDepthFunc[0]
@@ -137,13 +138,14 @@ func (g *Group[T]) DisplayString(depth int) string {
 
 	// WRITE ITEMS
 	for _, item := range g.Items {
-		strBuilder.WriteString(strings.Repeat(indexString, depth+2) + item.DisplayString() + "\n")
+		strBuilder.WriteString(strings.Repeat(indexString, depth+2) + item.DisplayString(parentId) + "\n")
 	}
 
 	// SUB GROUPS
 	if len(g.SubGroups) > 0 {
 		for _, subGroup := range g.SubGroups {
-			strBuilder.WriteString(strings.Repeat(indexString, depth+1) + subGroup.DisplayString(depth+1) + "\n")
+			strBuilder.WriteString(strings.Repeat(indexString, depth+1) + subGroup.DisplayString(depth+1, fmt.Sprintf("%s.%d", parentId, subGroup.Id)) + "\n")
+
 		}
 	}
 	return strBuilder.String()
@@ -200,7 +202,7 @@ func (f *fileSystemGroupService[T]) PrintGroups(groups []*Group[T]) {
 
 	var bldr strings.Builder
 	for _, group := range groups {
-		bldr.WriteString(group.DisplayString(0) + "\n")
+		bldr.WriteString(group.DisplayString(0, strconv.Itoa(group.Id)) + "\n")
 	}
 	fmt.Print(bldr.String())
 }
